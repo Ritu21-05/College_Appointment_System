@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev":"nodemon index.js"
+    "dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,11 @@
   "bugs": {
     "url": "https://github.com/Ritu21-05/College_Appointment_System/issues"
   },
-  "homepage": "https://github.com/Ritu21-05/College_Appointment_System#readme"
+  "homepage": "https://github.com/Ritu21-05/College_Appointment_System#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
 }
