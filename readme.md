@@ -25,6 +25,6 @@ MongoDB – Database
 
 Mongoose – ODM for MongoDB
 
-Jest / Mocha + Supertest – Automated testing
+Jest + Supertest – Automated testing
 
 Postman – API testing
