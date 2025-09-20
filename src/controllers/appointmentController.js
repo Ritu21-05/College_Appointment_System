@@ -1,39 +1,42 @@
 const Appointment = require("../models/Appointment");
 const Availability = require("../models/Availability");
 
-// Student books a slot
 exports.bookAppointment = async (req, res) => {
   try {
-    if (req.user.role !== "student") return res.status(403).json({ msg: "Only students can book slots" });
+    if (req.user.role !== "student") 
+      return res.status(403).json({ msg: "Only students can book slots" });
 
     const { availabilityId, time } = req.body;
 
+    // Find availability
+    const availability = await Availability.findById(availabilityId);
+    if (!availability) return res.status(404).json({ msg: "Availability not found" });
+
+    // Find the slot
+    const slot = availability.slots.find(s => s.time === time && !s.isBooked);
+    if (!slot) return res.status(404).json({ msg: "Slot not available" });
+
     // Mark slot as booked
-    const availability = await Availability.findOneAndUpdate(
-      { _id: availabilityId, "slots.time": time, "slots.isBooked": false },
-      { $set: { "slots.$.isBooked": true } },
-      { new: true }
-    );
+    slot.isBooked = true;
+    await availability.save();
 
-    if (!availability) return res.status(400).json({ msg: "Slot not available" });
-
-    // Create appointment
+    // Create appointment (use 'slot' to match schema)
     const appointment = new Appointment({
       student: req.user.id,
       professor: availability.professor,
       availability: availability._id,
       date: availability.date,
-      timeSlot: time
+      slot: time
     });
 
     await appointment.save();
     res.status(201).json(appointment);
   } catch (err) {
+    console.error("Error booking appointment:", err);
     res.status(500).json({ msg: err.message });
   }
 };
 
-// Professor cancels a student appointment
 exports.cancelAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.appointmentId);
@@ -43,27 +46,26 @@ exports.cancelAppointment = async (req, res) => {
       return res.status(403).json({ msg: "Not authorized" });
     }
 
-    // Free slot in availability
     await Availability.findByIdAndUpdate(
       appointment.availability,
       { $set: { "slots.$[elem].isBooked": false } },
-      { arrayFilters: [{ "elem.time": appointment.timeSlot }] }
+      { arrayFilters: [{ "elem.time": appointment.slot }] } // match 'slot' field
     );
 
     await appointment.deleteOne();
-    res.json({ msg: "Appointment cancelled" });
+    res.status(200).json({ msg: "Appointment cancelled successfully" });
   } catch (err) {
+    console.error("Error cancelling appointment:", err);
     res.status(500).json({ msg: err.message });
   }
 };
 
-// Student views their appointments
 exports.viewAppointments = async (req, res) => {
   try {
     const appointments = await Appointment.find({ student: req.user.id })
       .populate("professor", "name email")
       .populate("availability");
-    res.json(appointments);
+    res.status(200).json(appointments);
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

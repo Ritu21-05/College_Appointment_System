@@ -1,10 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { bookAppointment, cancelAppointment, viewAppointments } = require("../controllers/appointmentController");
 const auth = require("../middleware/auth");
+const appointmentController = require("../controllers/appointmentController");
 
-router.post("/book", auth, bookAppointment);
-router.delete("/:appointmentId", auth, cancelAppointment);
-router.get("/", auth, viewAppointments);
+// Book appointment
+router.post("/book", auth, appointmentController.bookAppointment);
+
+// Cancel appointment
+router.delete("/:appointmentId", auth, appointmentController.cancelAppointment);
+
+// View student appointments
+router.get("/student", auth, appointmentController.viewAppointments);
 
 module.exports = router;

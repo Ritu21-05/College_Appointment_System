@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { createAvailability, getProfessorAvailability } = require("../controllers/availabilityController");
 const auth = require("../middleware/auth");
+const availabilityController = require("../controllers/availabilityController");
 
-router.post("/", auth, createAvailability);
-router.get("/:professorId", auth, getProfessorAvailability);
+// Add availability
+router.post("/", auth, availabilityController.createAvailability);
+
+// View availability by professor
+router.get("/:professorId", auth, availabilityController.viewAvailability);
 
 module.exports = router;
